@@ -20,8 +20,7 @@ import (
 )
 
 var (
-	accessMode   int32 = 0644
-	backoffLimit int32 = 1
+	accessMode int32 = 0644
 )
 
 const (
@@ -133,9 +132,28 @@ func main() {
 					if err = klient.CoreV1().PersistentVolumeClaims(optNamespace).Delete(context.Background(), pvc.Name, metav1.DeleteOptions{}); err != nil {
 						return
 					}
+					time.Sleep(time.Second * 5)
 				}
 			} else {
 				return
+			}
+		}
+	}
+
+	// delete pods phase success
+	var podList *corev1.PodList
+	if podList, err = klient.CoreV1().Pods(optNamespace).List(context.Background(), metav1.ListOptions{
+		LabelSelector: taskSelector,
+	}); err != nil {
+		return
+	}
+	for _, pod := range podList.Items {
+		if pod.Status.Phase == corev1.PodSucceeded {
+			if !optDryRun {
+				log.Println("Found Orphan Pod:", pod.Name)
+				if err = klient.CoreV1().Pods(optNamespace).Delete(context.Background(), pod.Name, metav1.DeleteOptions{}); err != nil {
+					return
+				}
 			}
 		}
 	}
@@ -179,6 +197,8 @@ func main() {
 		if !optDryRun {
 			_ = klient.CoreV1().PersistentVolumeClaims(optNamespace).Delete(context.Background(), job.Name, metav1.DeleteOptions{})
 		}
+
+		time.Sleep(time.Second * 10)
 
 		jobCount--
 	}
@@ -227,9 +247,9 @@ func main() {
 		job.Labels = map[string]string{
 			taskLabelKey: taskLabelValue,
 		}
-		job.Spec.BackoffLimit = &backoffLimit
 		job.Spec.Template.Labels = map[string]string{
-			"k8s-app": taskName,
+			"k8s-app":    taskName,
+			taskLabelKey: taskLabelValue,
 		}
 		job.Spec.Template.Annotations = map[string]string{
 			"tke.cloud.tencent.com/vpc-ip-claim-delete-policy": "Immediate",
