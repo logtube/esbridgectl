@@ -127,6 +127,7 @@ func main() {
 		if _, err = klient.BatchV1().Jobs(optNamespace).Get(context.Background(), pvc.Name, metav1.GetOptions{}); err != nil {
 			if errors.IsNotFound(err) {
 				err = nil
+				log.Println("Found Orphan PVC:", pvc.Name)
 				if !optDryRun {
 					if err = klient.CoreV1().PersistentVolumeClaims(optNamespace).Delete(context.Background(), pvc.Name, metav1.DeleteOptions{}); err != nil {
 						return
@@ -163,6 +164,7 @@ func main() {
 		}
 
 		if !done {
+			log.Println("Saw Ongoing:", job.Name)
 			candidateIndices = removeFromStrSlice(candidateIndices, strings.TrimPrefix(job.Name, taskPrefix))
 			continue
 		}
