@@ -96,7 +96,7 @@ func main() {
 			}
 		}
 
-		sortCandidateIndices(candidateIndices)
+		candidateIndices = sortCandidateIndices(candidateIndices)
 	}
 
 	var config *rest.Config

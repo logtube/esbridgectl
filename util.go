@@ -30,11 +30,26 @@ func dateMidnight(t time.Time) time.Time {
 	return time.Date(t.Year(), t.Month(), t.Day(), 0, 0, 0, 0, time.Local)
 }
 
-func sortCandidateIndices(indices []string) {
-	sort.Slice(indices, func(i, j int) bool {
-		if strings.Contains(indices[i], "-prod-") || strings.Contains(indices[i], "-production-") {
-			return true
+func sortCandidateIndices(indices []string) []string {
+	var indicesProd []string
+	var indicesNoProd []string
+
+	for _, index := range indices {
+		if strings.Contains(strings.ToLower(index), "-prod") {
+			indicesProd = append(indicesProd, index)
+		} else {
+			indicesNoProd = append(indicesNoProd, index)
 		}
+	}
+
+	sortIndicesByDate(indicesProd)
+	sortIndicesByDate(indicesNoProd)
+
+	return append(indicesProd, indicesNoProd...)
+}
+
+func sortIndicesByDate(indices []string) {
+	sort.Slice(indices, func(i, j int) bool {
 		ti, oki := dateFromIndex(indices[i])
 		tj, okj := dateFromIndex(indices[j])
 		if oki && okj {
