@@ -14,6 +14,7 @@ import (
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
 	"log"
+	"math/rand"
 	"os"
 	"strings"
 	"time"
@@ -43,6 +44,8 @@ func main() {
 			log.Println("exited")
 		}
 	}(&err)
+
+	rand.Seed(time.Now().UnixNano())
 
 	var (
 		optDryRun         bool
@@ -102,7 +105,9 @@ func main() {
 			}
 		}
 
-		candidateIndices = sortCandidateIndices(candidateIndices)
+		rand.Shuffle(len(candidateIndices), func(i, j int) {
+			candidateIndices[i], candidateIndices[j] = candidateIndices[j], candidateIndices[i]
+		})
 	}
 
 	var config *rest.Config
