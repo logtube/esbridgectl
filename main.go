@@ -25,9 +25,10 @@ var (
 )
 
 const (
-	taskLabelKey   = "managed-by.logtube"
-	taskLabelValue = "esbridgectl"
-	taskPrefix     = "task-"
+	taskLabelKey       = "managed-by.logtube"
+	taskLabelValue     = "esbridgectl"
+	taskPrefix         = "task-"
+	indexAnnotationKey = "index.esbridgectl.logtube"
 )
 
 var (
@@ -190,6 +191,9 @@ func main() {
 		if !done {
 			log.Println("Saw Ongoing:", job.Name)
 			candidateIndices = removeFromStrSlice(candidateIndices, strings.TrimPrefix(job.Name, taskPrefix))
+			if job.Annotations != nil {
+				candidateIndices = removeFromStrSlice(candidateIndices, job.Annotations[indexAnnotationKey])
+			}
 			continue
 		}
 
@@ -225,13 +229,16 @@ func main() {
 	log.Println("Indices:", strings.Join(candidateIndices, ", "))
 
 	for _, index := range candidateIndices {
-		taskName := taskPrefix + index
+		taskName := taskPrefix + strings.ReplaceAll(strings.ReplaceAll(index, "_", "-"), ".", "-")
 
 		pvc := &corev1.PersistentVolumeClaim{}
 		pvc.Namespace = optNamespace
 		pvc.Name = taskName
 		pvc.Labels = map[string]string{
 			taskLabelKey: taskLabelValue,
+		}
+		pvc.Annotations = map[string]string{
+			indexAnnotationKey: index,
 		}
 		pvc.Spec.AccessModes = append(pvc.Spec.AccessModes, corev1.ReadWriteOnce)
 		pvc.Spec.StorageClassName = &optStorageClass
@@ -252,11 +259,15 @@ func main() {
 		job.Labels = map[string]string{
 			taskLabelKey: taskLabelValue,
 		}
+		job.Annotations = map[string]string{
+			indexAnnotationKey: index,
+		}
 		job.Spec.Template.Labels = map[string]string{
 			"k8s-app":    taskName,
 			taskLabelKey: taskLabelValue,
 		}
 		job.Spec.Template.Annotations = map[string]string{
+			indexAnnotationKey: index,
 			"tke.cloud.tencent.com/vpc-ip-claim-delete-policy": "Immediate",
 		}
 		spec := corev1.PodSpec{}
