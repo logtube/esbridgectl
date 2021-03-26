@@ -203,7 +203,8 @@ func main() {
 
 		container := corev1.Container{}
 
-		container.Image = "guoyk/esbridge"
+		container.Name = taskName
+		container.Image = optImage
 		container.ImagePullPolicy = corev1.PullAlways
 		container.Env = append(container.Env, corev1.EnvVar{
 			Name:  "ESBRIDGE_INDEX",
