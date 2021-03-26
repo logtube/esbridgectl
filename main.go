@@ -268,7 +268,7 @@ func main() {
 		}
 
 		spec.Containers = []corev1.Container{container}
-		spec.RestartPolicy = corev1.RestartPolicyOnFailure
+		spec.RestartPolicy = corev1.RestartPolicyNever
 
 		volCfg := corev1.Volume{}
 		volCfg.Name = "vol-cfg"
