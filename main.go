@@ -20,7 +20,8 @@ import (
 )
 
 var (
-	accessMode int32 = 0644
+	accessMode   int32 = 0644
+	backoffLimit int32 = 1
 )
 
 const (
@@ -226,6 +227,7 @@ func main() {
 		job.Labels = map[string]string{
 			taskLabelKey: taskLabelValue,
 		}
+		job.Spec.BackoffLimit = &backoffLimit
 		job.Spec.Template.Labels = map[string]string{
 			"k8s-app": taskName,
 		}
@@ -268,7 +270,7 @@ func main() {
 		}
 
 		spec.Containers = []corev1.Container{container}
-		spec.RestartPolicy = corev1.RestartPolicyNever
+		spec.RestartPolicy = corev1.RestartPolicyOnFailure
 
 		volCfg := corev1.Volume{}
 		volCfg.Name = "vol-cfg"
