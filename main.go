@@ -7,6 +7,7 @@ import (
 	"github.com/olivere/elastic/v7"
 	batchv1 "k8s.io/api/batch/v1"
 	corev1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
@@ -25,6 +26,7 @@ var (
 const (
 	taskLabelKey   = "managed-by.logtube"
 	taskLabelValue = "esbridgectl"
+	taskPrefix     = "task-"
 )
 
 var (
@@ -113,6 +115,29 @@ func main() {
 		return
 	}
 
+	// delete orphan pvc
+	var pvcList *corev1.PersistentVolumeClaimList
+	if pvcList, err = klient.CoreV1().PersistentVolumeClaims(optNamespace).List(context.Background(), metav1.ListOptions{
+		LabelSelector: taskSelector,
+	}); err != nil {
+		return
+	}
+
+	for _, pvc := range pvcList.Items {
+		if _, err = klient.BatchV1().Jobs(optNamespace).Get(context.Background(), pvc.Name, metav1.GetOptions{}); err != nil {
+			if errors.IsNotFound(err) {
+				err = nil
+				if !optDryRun {
+					if err = klient.CoreV1().PersistentVolumeClaims(optNamespace).Delete(context.Background(), pvc.Name, metav1.DeleteOptions{}); err != nil {
+						return
+					}
+				}
+			} else {
+				return
+			}
+		}
+	}
+
 	// delete completed Job
 
 	var jobList *batchv1.JobList
@@ -136,7 +161,9 @@ func main() {
 				log.Println("Saw Failed", job.Name)
 			}
 		}
+
 		if !done {
+			candidateIndices = removeFromStrSlice(candidateIndices, strings.TrimPrefix(job.Name, taskPrefix))
 			continue
 		}
 
@@ -170,7 +197,7 @@ func main() {
 	log.Println("Indices:", strings.Join(candidateIndices, ", "))
 
 	for _, index := range candidateIndices {
-		taskName := "task-" + index
+		taskName := taskPrefix + index
 
 		pvc := &corev1.PersistentVolumeClaim{}
 		pvc.Namespace = optNamespace

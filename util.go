@@ -58,3 +58,14 @@ func sortIndicesByDate(indices []string) {
 		return indices[i] > indices[j]
 	})
 }
+
+func removeFromStrSlice(indices []string, index string) []string {
+	out := make([]string, 0, len(indices))
+	for _, index0 := range indices {
+		if index0 == index {
+			continue
+		}
+		out = append(out, index0)
+	}
+	return out
+}
