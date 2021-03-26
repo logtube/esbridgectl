@@ -53,6 +53,8 @@ func main() {
 		optStorageClass   string
 		optStorageRequest string
 		optImage          string
+		optDataMount      string
+		optConfigMapKey   string
 	)
 
 	flag.BoolVar(&optDryRun, "dry-run", false, "dry run")
@@ -65,6 +67,8 @@ func main() {
 	flag.StringVar(&optConfigMap, "config-map", "esbridge-cfg", "name of the configmap to feed esbridge")
 	flag.StringVar(&optStorageClass, "storage-class", "local-path", "storage class of pvc")
 	flag.StringVar(&optStorageRequest, "storage-request", "200Gi", "storage request for pvc")
+	flag.StringVar(&optDataMount, "data-mount", "/data", "data directory mount for job")
+	flag.StringVar(&optConfigMapKey, "config-map-key", "esbridge.yml", "key in config map")
 	flag.Parse()
 
 	var candidateIndices []string
@@ -221,6 +225,17 @@ func main() {
 		container.Resources.Limits = corev1.ResourceList{
 			corev1.ResourceCPU:    resource.MustParse("2"),
 			corev1.ResourceMemory: resource.MustParse("6000Mi"),
+		}
+		container.VolumeMounts = []corev1.VolumeMount{
+			{
+				MountPath: "/data",
+				Name:      "vol-data",
+			},
+			{
+				MountPath: "/etc/esbridge.yml",
+				Name:      "vol-cfg",
+				SubPath:   optConfigMapKey,
+			},
 		}
 
 		spec.Containers = []corev1.Container{container}
