@@ -45,7 +45,7 @@ func sortCandidateIndices(indices []string) []string {
 	sortIndicesByDate(indicesProd)
 	sortIndicesByDate(indicesNoProd)
 
-	return append(indicesProd, indicesNoProd...)
+	return append(indicesNoProd, indicesProd...)
 }
 
 func sortIndicesByDate(indices []string) {
