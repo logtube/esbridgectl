@@ -82,6 +82,9 @@ func main() {
 		}
 
 		for _, row := range resp {
+			if strings.HasPrefix(row.Index, ".") {
+				continue
+			}
 			var t time.Time
 			var ok bool
 			if t, ok = dateFromIndex(row.Index); !ok {
@@ -156,7 +159,7 @@ func main() {
 		return
 	}
 
-	if slots > len(candidateIndices) {
+	if slots < len(candidateIndices) {
 		candidateIndices = candidateIndices[0:slots]
 	}
 
