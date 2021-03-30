@@ -5,6 +5,7 @@ import (
 	"flag"
 	"fmt"
 	"github.com/olivere/elastic/v7"
+	"go.guoyk.net/requo"
 	batchv1 "k8s.io/api/batch/v1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
@@ -61,6 +62,7 @@ func main() {
 		optImage          string
 		optDataMount      string
 		optConfigMapKey   string
+		optNotifyURL      string
 	)
 
 	flag.BoolVar(&optDryRun, "dry-run", false, "dry run")
@@ -75,6 +77,7 @@ func main() {
 	flag.StringVar(&optStorageRequest, "storage-request", "200Gi", "storage request for pvc")
 	flag.StringVar(&optDataMount, "data-mount", "/data", "data directory mount for job")
 	flag.StringVar(&optConfigMapKey, "config-map-key", "esbridge.yml", "key in config map")
+	flag.StringVar(&optNotifyURL, "notify-url", "", "notification url")
 	flag.Parse()
 
 	var candidateIndices []string
@@ -181,10 +184,20 @@ func main() {
 			if cond.Type == batchv1.JobComplete && cond.Status == corev1.ConditionTrue {
 				done = true
 				log.Println("Saw Complete", job.Name)
+				if optNotifyURL != "" {
+					_ = requo.JSONPost(context.Background(), optNotifyURL, map[string]string{
+						"text": "任务完成: " + job.Name,
+					}, nil)
+				}
 			}
 			if cond.Type == batchv1.JobFailed && cond.Status == corev1.ConditionTrue {
 				done = true
 				log.Println("Saw Failed", job.Name)
+				if optNotifyURL != "" {
+					_ = requo.JSONPost(context.Background(), optNotifyURL, map[string]string{
+						"text": "任务失败: " + job.Name,
+					}, nil)
+				}
 			}
 		}
 
