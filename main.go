@@ -11,6 +11,7 @@ import (
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/api/resource"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
@@ -32,6 +33,8 @@ const (
 	taskPrefix         = "task-"
 	indexAnnotationKey = "index.esbridgectl.logtube"
 )
+
+const PatchRetain = `{"spec":{"persistentVolumeReclaimPolicy":"` + corev1.PersistentVolumeReclaimRetain + `"}}`
 
 var (
 	taskSelector = fmt.Sprintf("%s=%s", taskLabelKey, taskLabelValue)
@@ -380,7 +383,7 @@ func main() {
 			pv.Spec.PersistentVolumeReclaimPolicy = corev1.PersistentVolumeReclaimDelete
 
 			log.Println("PV Patch:", pvc.Spec.VolumeName)
-			if _, err = klient.CoreV1().PersistentVolumes().Update(context.Background(), pv, metav1.UpdateOptions{}); err != nil {
+			if _, err = klient.CoreV1().PersistentVolumes().Patch(context.Background(), pv.Name, types.StrategicMergePatchType, []byte(PatchRetain), metav1.PatchOptions{}); err != nil {
 				return
 			}
 		}
