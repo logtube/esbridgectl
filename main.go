@@ -17,6 +17,7 @@ import (
 	"log"
 	"math/rand"
 	"os"
+	"sort"
 	"strings"
 	"time"
 )
@@ -111,6 +112,12 @@ func main() {
 
 		rand.Shuffle(len(candidateIndices), func(i, j int) {
 			candidateIndices[i], candidateIndices[j] = candidateIndices[j], candidateIndices[i]
+		})
+		sort.Slice(candidateIndices, func(i, j int) bool {
+			if strings.Contains(candidateIndices[j], "prod") {
+				return true
+			}
+			return false
 		})
 	}
 
