@@ -114,6 +114,12 @@ func main() {
 			candidateIndices[i], candidateIndices[j] = candidateIndices[j], candidateIndices[i]
 		})
 		sort.Slice(candidateIndices, func(i, j int) bool {
+			if strings.Contains(candidateIndices[j], "info-prod") {
+				return true
+			}
+			if strings.Contains(candidateIndices[j], "access-prod") {
+				return true
+			}
 			if strings.Contains(candidateIndices[j], "prod") {
 				return true
 			}
