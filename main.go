@@ -64,6 +64,7 @@ func main() {
 		optDataMount      string
 		optConfigMapKey   string
 		optNotifyURL      string
+		optBatch          string
 	)
 
 	flag.BoolVar(&optDryRun, "dry-run", false, "dry run")
@@ -79,6 +80,7 @@ func main() {
 	flag.StringVar(&optDataMount, "data-mount", "/data", "data directory mount for job")
 	flag.StringVar(&optConfigMapKey, "config-map-key", "esbridge.yml", "key in config map")
 	flag.StringVar(&optNotifyURL, "notify-url", "", "notification url")
+	flag.StringVar(&optBatch, "batch", "2000", "batch size")
 	flag.Parse()
 
 	var candidateIndices []string
@@ -309,7 +311,7 @@ func main() {
 		})
 		container.Env = append(container.Env, corev1.EnvVar{
 			Name:  "ESBRIDGE_BATCH_SIZE",
-			Value: "2000",
+			Value: optBatch,
 		})
 		container.Resources.Requests = corev1.ResourceList{
 			corev1.ResourceCPU:    resource.MustParse("2"),
