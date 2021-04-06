@@ -43,9 +43,12 @@ func removeFromStrSlice(indices []string, index string) []string {
 
 var (
 	deferIndices = []string{
-		"info-prod",
-		"access-prod",
-		"prod",
+		"info-prod-",
+		"info-production-",
+		"access-prod-",
+		"access-production-",
+		"-prod-",
+		"-production-",
 	}
 )
 
