@@ -109,12 +109,15 @@ func main() {
 				continue
 			}
 			if midnight.Sub(t)/(time.Hour*24) >= time.Duration(optDays) {
-				log.Println("Candidate:", row.Index)
 				candidateIndices = append(candidateIndices, row.Index)
 			}
 		}
 
 		sortCandidateIndices(candidateIndices)
+
+		for _, ci := range candidateIndices {
+			log.Println("Candidate:", ci)
+		}
 	}
 
 	var config *rest.Config
