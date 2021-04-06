@@ -115,10 +115,7 @@ func main() {
 			}
 		}
 
-		rand.Shuffle(len(candidateIndices), func(i, j int) {
-			candidateIndices[i], candidateIndices[j] = candidateIndices[j], candidateIndices[i]
-		})
-		sort.Slice(candidateIndices, func(i, j int) bool {
+		sort.SliceStable(candidateIndices, func(i, j int) bool {
 			if strings.Contains(candidateIndices[j], "info-prod") {
 				return true
 			}
