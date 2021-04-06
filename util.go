@@ -3,7 +3,9 @@ package main
 import (
 	"path/filepath"
 	"regexp"
+	"sort"
 	"strconv"
+	"strings"
 	"time"
 )
 
@@ -37,4 +39,32 @@ func removeFromStrSlice(indices []string, index string) []string {
 		out = append(out, index0)
 	}
 	return out
+}
+
+var (
+	deferIndices = []string{
+		"info-prod",
+		"access-prod",
+		"prod",
+	}
+)
+
+func sortCandidateIndices(indices []string) {
+	sort.SliceStable(indices, func(i, j int) bool {
+		for _, di := range deferIndices {
+			if strings.Contains(strings.ToLower(indices[j]), di) {
+				if !strings.Contains(strings.ToLower(indices[i]), di) {
+					return true
+				}
+			} else {
+				if strings.Contains(strings.ToLower(indices[i]), di) {
+					return false
+				}
+			}
+		}
+		if len(indices[i]) > 10 && len(indices[j]) > 10 {
+			return indices[j][len(indices[j])-10:] > indices[i][len(indices[i])-10:]
+		}
+		return indices[j] > indices[i]
+	})
 }

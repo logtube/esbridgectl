@@ -1,18 +1,18 @@
 package main
 
 import (
-	"sort"
-	"strings"
 	"testing"
 )
 
 func TestSortProd(t *testing.T) {
-	ss := []string{"hello-prod", "hello-dev", "hello-test"}
-	sort.Slice(ss, func(i, j int) bool {
-		if strings.Contains(ss[j], "prod") {
-			return true
-		}
-		return false
-	})
+	ss := []string{
+		"info-prod-2021-03-02",
+		"info-prod-2021-03-01",
+		"access-prod-2021-03-02",
+		"access-prod-2021-03-01",
+		"access-test-2021-03-02",
+		"access-test-2021-03-01",
+	}
+	sortCandidateIndices(ss)
 	t.Log(ss)
 }

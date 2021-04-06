@@ -18,7 +18,6 @@ import (
 	"log"
 	"math/rand"
 	"os"
-	"sort"
 	"strings"
 	"time"
 )
@@ -115,18 +114,7 @@ func main() {
 			}
 		}
 
-		sort.SliceStable(candidateIndices, func(i, j int) bool {
-			if strings.Contains(candidateIndices[j], "info-prod") {
-				return true
-			}
-			if strings.Contains(candidateIndices[j], "access-prod") {
-				return true
-			}
-			if strings.Contains(candidateIndices[j], "prod") {
-				return true
-			}
-			return false
-		})
+		sortCandidateIndices(candidateIndices)
 	}
 
 	var config *rest.Config
