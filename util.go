@@ -47,8 +47,7 @@ var (
 		"info-production-",
 		"access-prod-",
 		"access-production-",
-		"-prod-",
-		"-production-",
+		"-prod",
 	}
 )
 
