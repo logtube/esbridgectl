@@ -67,6 +67,7 @@ func main() {
 		optConfigMapKey   string
 		optNotifyURL      string
 		optBatch          string
+		optIgnores        string
 	)
 
 	flag.BoolVar(&optDryRun, "dry-run", false, "dry run")
@@ -83,7 +84,15 @@ func main() {
 	flag.StringVar(&optConfigMapKey, "config-map-key", "esbridge.yml", "key in config map")
 	flag.StringVar(&optNotifyURL, "notify-url", "", "notification url")
 	flag.StringVar(&optBatch, "batch", "2000", "batch size")
+	flag.StringVar(&optIgnores, "ignores", "", "ignore indices")
 	flag.Parse()
+
+	ignores := map[string]bool{}
+
+	ignoreSplit := strings.Split(optIgnores, ",")
+	for _, item := range ignoreSplit {
+		ignores[strings.TrimSpace(item)] = true
+	}
 
 	var candidateIndices []string
 	{
@@ -101,6 +110,10 @@ func main() {
 
 		for _, row := range resp {
 			if strings.HasPrefix(row.Index, ".") {
+				continue
+			}
+			if ignores[row.Index] {
+				log.Println("Ignored:", row.Index)
 				continue
 			}
 			var t time.Time
